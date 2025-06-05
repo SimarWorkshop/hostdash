@@ -1,8 +1,8 @@
-// Sample model outputs
 const dashboard = document.getElementById("dashboard");
 
-// Connect to WebSocket
-const socket = new WebSocket(`ws://${location.host}`);
+// Setup WebSocket with secure fallback
+const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+const socket = new WebSocket(`${protocol}://${location.host}`);
 
 socket.onmessage = (event) => {
   const output = JSON.parse(event.data);
@@ -13,18 +13,26 @@ socket.onmessage = (event) => {
   card.innerHTML = `
     <h2 class="text-white font-semibold text-lg mb-1">${output.model}</h2>
     <p class="text-white"><strong>Threat:</strong> ${output.threat}</p>
-    <details class="text-white mt-2">
-      <summary class="text-yellow-400 hover:underline cursor-pointer">▶ Details</summary>
+    
+    <button class="toggle-details">▶ Details</button>
+    <div class="details-content hidden">
       <p><strong>Confidence:</strong> ${output.confidence}</p>
       <p><strong>Time:</strong> ${output.time}</p>
-    </details>
+    </div>
   `;
 
-  dashboard.prepend(card);  // Add new ones on top
+  dashboard.prepend(card);
+
+  // Add toggle functionality for this new card
+  const toggleBtn = card.querySelector(".toggle-details");
+  const detailsDiv = card.querySelector(".details-content");
+  toggleBtn.addEventListener("click", () => {
+    detailsDiv.classList.toggle("hidden");
+    toggleBtn.textContent = detailsDiv.classList.contains("hidden") ? "▶ Details" : "▼ Hide Details";
+  });
 };
 
-
-
+// Sample static data to initialize dashboard
 const modelOutputs = [
   {
     model: "Intrusion Detection",
@@ -52,19 +60,16 @@ const modelOutputs = [
   }
 ];
 
-// Populate model outputs on the left panel
-const dashboard = document.getElementById("dashboard");
-
-modelOutputs.forEach((output, index) => {
+// Populate initial static cards
+modelOutputs.forEach(output => {
   const card = document.createElement("div");
-  card.className = "bg-gray-800 rounded-2xl p-4 shadow-md";
+  card.className = "bg-gray-800 rounded-2xl p-4 shadow-md mb-4";
 
   card.innerHTML = `
     <h2 class="text-white font-semibold text-lg mb-1">${output.model}</h2>
     <p class="text-white"><strong>Threat:</strong> ${output.threat}</p>
     
     <button class="toggle-details">▶ Details</button>
-
     <div class="details-content hidden">
       <p><strong>Confidence:</strong> ${output.confidence}</p>
       <p><strong>Time:</strong> ${output.time}</p>
@@ -72,14 +77,13 @@ modelOutputs.forEach((output, index) => {
   `;
 
   dashboard.appendChild(card);
-});
 
-// Add toggle functionality
-document.querySelectorAll(".toggle-details").forEach(button => {
-  button.addEventListener("click", () => {
-    const details = button.nextElementSibling;
-    details.classList.toggle("hidden");
-    button.textContent = details.classList.contains("hidden") ? "▶ Details" : "▼ Hide Details";
+  // Toggle logic for static cards
+  const toggleBtn = card.querySelector(".toggle-details");
+  const detailsDiv = card.querySelector(".details-content");
+  toggleBtn.addEventListener("click", () => {
+    detailsDiv.classList.toggle("hidden");
+    toggleBtn.textContent = detailsDiv.classList.contains("hidden") ? "▶ Details" : "▼ Hide Details";
   });
 });
 
