@@ -1,11 +1,41 @@
-const modelOutputs = [];
+const modelOutputs = []; // will be populated dynamically
 
 const dashboard = document.getElementById("dashboard");
+
+// Use correct WebSocket protocol based on page protocol
+const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+const socket = new WebSocket(`${protocol}//${window.location.host}`);
+
+socket.addEventListener("open", () => {
+  console.log("WebSocket connected");
+});
+
+socket.addEventListener("message", (event) => {
+  try {
+    const newOutput = JSON.parse(event.data);
+
+    // Normalize threat value to lowercase for consistent checks
+    if (newOutput.threat) newOutput.threat = newOutput.threat.toLowerCase();
+
+    addModelOutput(newOutput);
+  } catch (err) {
+    console.error("Error parsing WebSocket message:", err);
+  }
+});
+
+socket.addEventListener("close", () => {
+  console.log("WebSocket connection closed");
+});
+
+socket.addEventListener("error", (err) => {
+  console.error("WebSocket error:", err);
+});
 
 function renderDashboard() {
   dashboard.innerHTML = "";
 
-  [...modelOutputs].reverse().forEach((output) => {
+  // Show latest first by reversing the array
+  [...modelOutputs].reverse().forEach((output, index) => {
     const card = document.createElement("div");
     card.className = `bg-gray-900 border-l-4 ${
       output.threat === "threat" ? "border-red-600" : "border-green-600"
@@ -26,18 +56,21 @@ function renderDashboard() {
     dashboard.appendChild(card);
   });
 
-  document.querySelectorAll(".toggle-details").forEach(button => {
+  // Toggle details
+  document.querySelectorAll(".toggle-details").forEach((button) => {
     button.addEventListener("click", () => {
       const details = button.nextElementSibling;
       details.classList.toggle("hidden");
-      button.textContent = details.classList.contains("hidden") ? "▶ Details" : "▼ Hide Details";
+      button.textContent = details.classList.contains("hidden")
+        ? "▶ Details"
+        : "▼ Hide Details";
     });
   });
 }
 
 function renderChart() {
-  const threatCount = modelOutputs.filter(o => o.threat === "threat").length;
-  const notThreatCount = modelOutputs.filter(o => o.threat !== "threat").length;
+  const threatCount = modelOutputs.filter((o) => o.threat === "threat").length;
+  const notThreatCount = modelOutputs.filter((o) => o.threat !== "threat").length;
 
   const ctx = document.getElementById("threatChart").getContext("2d");
   if (window.threatChart) window.threatChart.destroy();
@@ -46,39 +79,38 @@ function renderChart() {
     type: "bar",
     data: {
       labels: ["Threat", "Not a Threat"],
-      datasets: [{
-        label: "Threat Classification Summary",
-        data: [threatCount, notThreatCount],
-        backgroundColor: ["#f87171", "#34d399"],
-        borderRadius: 10,
-      }]
+      datasets: [
+        {
+          label: "Threat Classification Summary",
+          data: [threatCount, notThreatCount],
+          backgroundColor: ["#ef4444", "#10b981"], // red and green
+          borderRadius: 10,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: {
-        duration: 500,
-        easing: 'easeOutCubic'
-      },
       plugins: {
         legend: {
           labels: {
-            color: "#d1d5db"
-          }
-        }
+            color: "#d1d5db",
+          },
+        },
       },
       scales: {
         x: {
           ticks: { color: "#d1d5db" },
-          grid: { color: "#374151" }
+          grid: { color: "#374151" },
         },
         y: {
-          beginAtZero: true,
           ticks: { color: "#d1d5db" },
-          grid: { color: "#374151" }
-        }
-      }
-    }
+          grid: { color: "#374151" },
+          beginAtZero: true,
+          stepSize: 1,
+        },
+      },
+    },
   });
 }
 
@@ -87,11 +119,3 @@ function addModelOutput(newOutput) {
   renderDashboard();
   renderChart();
 }
-
-// WebSocket Client
-const socket = new WebSocket(`ws://${window.location.host}`);
-
-socket.onmessage = function (event) {
-  const data = JSON.parse(event.data);
-  addModelOutput(data);
-};
