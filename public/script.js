@@ -1,11 +1,11 @@
-const modelOutputs = []; // will be populated dynamically
+const modelOutputs = [];
 
 const dashboard = document.getElementById("dashboard");
 
 function renderDashboard() {
   dashboard.innerHTML = "";
 
-  modelOutputs.forEach((output, index) => {
+  [...modelOutputs].reverse().forEach((output) => {
     const card = document.createElement("div");
     card.className = `bg-gray-900 border-l-4 ${
       output.threat === "threat" ? "border-red-600" : "border-green-600"
@@ -26,7 +26,6 @@ function renderDashboard() {
     dashboard.appendChild(card);
   });
 
-  // Toggle details
   document.querySelectorAll(".toggle-details").forEach(button => {
     button.addEventListener("click", () => {
       const details = button.nextElementSibling;
@@ -50,13 +49,17 @@ function renderChart() {
       datasets: [{
         label: "Threat Classification Summary",
         data: [threatCount, notThreatCount],
-        backgroundColor: ["#9ca3af", "#6b7280"], // neutral grays
+        backgroundColor: ["#f87171", "#34d399"],
         borderRadius: 10,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: {
+        duration: 500,
+        easing: 'easeOutCubic'
+      },
       plugins: {
         legend: {
           labels: {
@@ -70,6 +73,7 @@ function renderChart() {
           grid: { color: "#374151" }
         },
         y: {
+          beginAtZero: true,
           ticks: { color: "#d1d5db" },
           grid: { color: "#374151" }
         }
@@ -84,5 +88,10 @@ function addModelOutput(newOutput) {
   renderChart();
 }
 
-// Example: 
-// addModelOutput({ model: "Lambda-XGBoost", threat: "threat", confidence: "96%", time: new Date().toISOString() });
+// WebSocket Client
+const socket = new WebSocket(`ws://${window.location.host}`);
+
+socket.onmessage = function (event) {
+  const data = JSON.parse(event.data);
+  addModelOutput(data);
+};

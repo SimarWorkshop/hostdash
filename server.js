@@ -8,24 +8,26 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// Create WebSocket server
-const server = app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+// Start HTTP server
+const server = app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 
+// Create WebSocket server
 const wss = new WebSocket.Server({ server });
 
-// Store all connected clients
 let clients = [];
 
 wss.on("connection", (ws) => {
   clients.push(ws);
+  console.log("WebSocket client connected");
+
   ws.on("close", () => {
     clients = clients.filter((client) => client !== ws);
   });
 });
 
-// Endpoint for Lambda to POST JSON
+// POST endpoint for Lambda or test curl
 app.post("/send-alert", (req, res) => {
   const alertData = req.body;
 
