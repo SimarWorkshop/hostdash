@@ -59,7 +59,10 @@ main {
   display: none;
 }
 
-canvas {
+/* Make sure canvas is visible with explicit height */
+#threatChart {
+  height: 300px !important;
+  width: 100% !important;
   background-color: #111827;
   border-radius: 1rem;
   padding: 1rem;

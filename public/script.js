@@ -83,7 +83,7 @@ function renderChart() {
         {
           label: "Threat Classification Summary",
           data: [threatCount, notThreatCount],
-          backgroundColor: ["#ef4444", "#10b981"], // red and green
+          backgroundColor: ["#ef4444", "#10b981"], // bright red and green
           borderRadius: 10,
         },
       ],
