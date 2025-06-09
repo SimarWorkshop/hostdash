@@ -35,7 +35,7 @@ function renderDashboard() {
   dashboard.innerHTML = "";
 
   // Show latest first by reversing the array
-  [...modelOutputs].reverse().forEach((output, index) => {
+  [...modelOutputs].reverse().forEach((output) => {
     const card = document.createElement("div");
     card.className = `bg-gray-900 border-l-4 ${
       output.threat === "threat" ? "border-red-600" : "border-green-600"
@@ -73,7 +73,11 @@ function renderChart() {
   const notThreatCount = modelOutputs.filter((o) => o.threat !== "threat").length;
 
   const ctx = document.getElementById("threatChart").getContext("2d");
-  if (window.threatChart) window.threatChart.destroy();
+
+  // ✅ Only destroy the chart if it exists and has destroy method
+  if (window.threatChart && typeof window.threatChart.destroy === "function") {
+    window.threatChart.destroy();
+  }
 
   window.threatChart = new Chart(ctx, {
     type: "bar",
@@ -83,7 +87,7 @@ function renderChart() {
         {
           label: "Threat Classification Summary",
           data: [threatCount, notThreatCount],
-          backgroundColor: ["#ef4444", "#10b981"], // bright red and green
+          backgroundColor: ["#ef4444", "#10b981"],
           borderRadius: 10,
         },
       ],
@@ -104,10 +108,13 @@ function renderChart() {
           grid: { color: "#374151" },
         },
         y: {
-          ticks: { color: "#d1d5db" },
-          grid: { color: "#374151" },
           beginAtZero: true,
-          stepSize: 1,
+          ticks: {
+            color: "#d1d5db",
+            stepSize: 1,
+            precision: 0,
+          },
+          grid: { color: "#374151" },
         },
       },
     },
