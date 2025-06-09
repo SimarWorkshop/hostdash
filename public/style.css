@@ -8,29 +8,22 @@ main {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  padding: 1rem;
+  gap: 1rem;
 }
 
 /* Left Scrollable Panel */
 #dashboard {
   flex: 0 0 30%;
-  max-height: 100vh;
+  max-height: 100%;
   overflow-y: auto;
   padding: 1rem;
-  padding-bottom: 5rem;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+  background-color: #111827;
+  border-radius: 1rem;
 }
 
 #dashboard > * {
-  flex-shrink: 0;
   margin-bottom: 1rem;
-}
-
-#dashboard > :last-child {
-  margin-bottom: 0;
-  padding-bottom: 2rem;
-  margin-bottom: 2rem;
 }
 
 /* Scrollbar Styling */
@@ -64,4 +57,10 @@ main {
 
 .hidden {
   display: none;
+}
+
+canvas {
+  background-color: #111827;
+  border-radius: 1rem;
+  padding: 1rem;
 }
